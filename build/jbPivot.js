@@ -48,7 +48,8 @@ $(function() {
          copyright: true,
          formatter: "default",
          l_all: "All",
-         l_unused_fields: "Unused fields"
+         l_unused_fields: "Unused fields",
+         row_agregate: false
       },
       _create: function() {
          this.CollapsedNodes = {};
@@ -788,6 +789,7 @@ $(function() {
                }
             }
 
+												var zValues = [];
             for (x = 0; x < tabley.length; x++) {
 
                mindex = [];
@@ -830,9 +832,11 @@ $(function() {
                   S += " class=\"" + cls + "\"";
                   S += ">";
 
-                  S += this._format(
-                          this.afields[this.zfields[z]].getValue(V[this.zfields[z]]),
-                          this.zfields[z]);
+                  var zValue = this.afields[this.zfields[z]].getValue(V[this.zfields[z]]);
+                  S += this._format(zValue, this.zfields[z]);
+				  												if(!isNaN(parseFloat(zValue))) {
+					  															zValues.push(parseFloat(zValue));
+				  												}
                   S += "</td>";
                }
                if (this.zfields.length === 0) {
@@ -854,6 +858,19 @@ $(function() {
                   S += "</td>";
                }
             }
+												if(this.options.row_agregate && this.zfields.length === 1) {
+												var rowAggrValue;
+												if(this.options.rowAgregateType == 'min') {
+																rowAggrValue = Math.min.apply(Math, zValues);
+												} else if(this.options.rowAgregateType == 'max') {
+																rowAggrValue = Math.max.apply(Math, zValues);
+												} else if(this.options.rowAgregateType == 'avg') {
+																rowAggrValue = (zValues.reduce(function(a, b) {return a + b;}, 0)) / zValues.length;
+												} else {
+																rowAggrValue = zValues.reduce(function(a, b) {return a + b;}, 0);
+												}
+												S += "<td class='summary row_total line_top_2 line_bottom_2 line_left_2 line_right_2'>"+this._format(rowAggrValue, 2)+"</td>";
+											}
             S += "</tr>";
          }
 
